@@ -12,6 +12,8 @@ namespace HIPPO
         private readonly float _groundedGravity;
 
         private float _verticalVelocity;
+        public float CurrentHorizontalSpeed { get; private set; }
+        public float MoveSpeed => _moveSpeed;
 
         public HippoLocomotion(Transform transform, CharacterController controller, float moveSpeed, float turnSpeed, float gravity, float groundedGravity)
         {
@@ -36,12 +38,14 @@ namespace HIPPO
             var horizontal = _transform.forward * _moveSpeed;
             var velocity = new Vector3(horizontal.x, _verticalVelocity, horizontal.z);
             _controller.Move(velocity * dt);
+            CurrentHorizontalSpeed = _moveSpeed;
         }
 
         public void MoveVerticalOnly(float dt)
         {
             ApplyGravity(dt);
             _controller.Move(new Vector3(0f, _verticalVelocity, 0f) * dt);
+            CurrentHorizontalSpeed = 0f;
         }
 
         private void ApplyGravity(float dt)
@@ -57,4 +61,3 @@ namespace HIPPO
         }
     }
 }
-

@@ -33,7 +33,7 @@ namespace HIPPO
 
         private TaskStatus MoveStep()
         {
-            Transform t = _ctx.Transform;
+            Transform t = _ctx.transform;
             
             if (!_ctx.IsMoving)
             {
@@ -80,6 +80,8 @@ namespace HIPPO
             }
 
             _locomotion.MoveForward(Time.deltaTime);
+            _ctx.Speed = _locomotion.CurrentHorizontalSpeed;
+            _ctx.IsMoving = true;
 
             if (Time.time >= _ctx.MoveEndTime)
             {
@@ -92,7 +94,7 @@ namespace HIPPO
 
         private TaskStatus IdleStep()
         {
-            var t = _ctx.Transform;
+            var t = _ctx.transform;
             if (!_ctx.IsIdling)
             {
                 _ctx.IsIdling = true;
@@ -106,6 +108,8 @@ namespace HIPPO
             }
 
             _locomotion.MoveVerticalOnly(Time.deltaTime);
+            _ctx.Speed = 0f;
+            _ctx.IsMoving = false;
 
             if (Time.time >= _ctx.IdleEndTime)
             {
@@ -117,4 +121,3 @@ namespace HIPPO
         }
     }
 }
-

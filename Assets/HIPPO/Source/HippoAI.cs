@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace HIPPO
 {
-    // Thin orchestrator that wires sensors, locomotion and behavior tree
+    [RequireComponent(typeof(HippoContext), typeof(CharacterController))]
     public class HippoAI : MonoBehaviour
     {
         [Header("Movement")]
@@ -24,9 +24,7 @@ namespace HIPPO
         [SerializeField] private float _groundedGravity = -2.0f;
 
         [Header("Optional")]
-        [SerializeField] private Transform _areaCenter;
         [SerializeField, Tooltip("Bias to home when outside radius (0-1)")] private float _homeBias = 0.5f;
-
         [SerializeField, Tooltip("Behavior tree cache for visualization")] private BehaviorTree _tree;
 
         private CharacterController _controller;
@@ -37,29 +35,22 @@ namespace HIPPO
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
-            if (_controller == null)
-            {
-                _controller = gameObject.AddComponent<CharacterController>();
-                _controller.height = 1.4f;
-                _controller.radius = 0.45f;
-                _controller.center = new Vector3(0f, 0.7f, 0f);
-                _controller.slopeLimit = 45f;
-                _controller.stepOffset = 0.3f;
-            }
-
-            _ctx = new HippoContext(transform)
-            {
-                AreaCenter = _areaCenter,
-                HomePosition = _areaCenter ? _areaCenter.position : transform.position,
-                WanderRadius = _wanderRadius,
-                HomeBias = Mathf.Clamp01(_homeBias),
-                MoveTimeRange = _moveTimeRange,
-                IdleTimeRange = _idleTimeRange,
-            };
+            
+            _controller.height = 1.4f;
+            _controller.radius = 0.45f;
+            _controller.center = new Vector3(0f, 0.7f, 0f);
+            _controller.slopeLimit = 45f;
+            _controller.stepOffset = 0.3f;
+   
+            _ctx = GetComponent<HippoContext>();
+            _ctx.HomePosition = transform.position;
+            _ctx.WanderRadius = _wanderRadius;
+            _ctx.HomeBias = Mathf.Clamp01(_homeBias);
+            _ctx.MoveTimeRange = _moveTimeRange;
+            _ctx.IdleTimeRange = _idleTimeRange;
 
             _sensors = new HippoSensors(transform, _groundMask, _edgeCheckDistance, _obstacleCheckDistance, _groundRayLength);
             _locomotion = new HippoLocomotion(transform, _controller, _moveSpeed, _turnSpeed, _gravity, _groundedGravity);
-
             _tree = new HippoBehavior(gameObject, _ctx, _sensors, _locomotion).Build();
         }
 
@@ -70,7 +61,7 @@ namespace HIPPO
 
         private void OnDrawGizmosSelected()
         {
-            var home = _areaCenter ? _areaCenter.position : transform.position;
+            var home = transform.position;
             Gizmos.color = new Color(0.2f, 0.8f, 0.3f, 0.25f);
             Gizmos.DrawWireSphere(home, _wanderRadius);
 
