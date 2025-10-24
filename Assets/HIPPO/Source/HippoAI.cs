@@ -25,6 +25,12 @@ namespace HIPPO
 
         [Header("Optional")]
         [SerializeField, Tooltip("Bias to home when outside radius (0-1)")] private float _homeBias = 0.5f;
+        
+        [Header("Follow")]
+        [SerializeField] private Transform _followTarget;
+        [SerializeField, Min(0f)] private float _followStartDistance = 12f;
+        [SerializeField, Min(0f)] private float _followStopDistance = 2.5f;
+        [SerializeField, Min(0f)] private float _followLoseDistance = 16f;
         [SerializeField, Tooltip("Behavior tree cache for visualization")] private BehaviorTree _tree;
 
         private CharacterController _controller;
@@ -48,6 +54,19 @@ namespace HIPPO
             _ctx.HomeBias = Mathf.Clamp01(_homeBias);
             _ctx.MoveTimeRange = _moveTimeRange;
             _ctx.IdleTimeRange = _idleTimeRange;
+            if (_followTarget == null)
+            {
+                var fpc = FindObjectOfType<FirstPersonController>();
+                if (fpc != null) _followTarget = fpc.transform;
+                else {
+                    var tagged = GameObject.FindGameObjectWithTag("Player");
+                    if (tagged) _followTarget = tagged.transform;
+                }
+            }
+            _ctx.Target = _followTarget;
+            _ctx.FollowStartDistance = _followStartDistance;
+            _ctx.FollowStopDistance = _followStopDistance;
+            _ctx.FollowLoseDistance = Mathf.Max(_followLoseDistance, _followStartDistance + 0.1f);
 
             _sensors = new HippoSensors(transform, _groundMask, _edgeCheckDistance, _obstacleCheckDistance, _groundRayLength);
             _locomotion = new HippoLocomotion(transform, _controller, _moveSpeed, _turnSpeed, _gravity, _groundedGravity);

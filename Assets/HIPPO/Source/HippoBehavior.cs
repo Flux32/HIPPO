@@ -23,9 +23,21 @@ namespace HIPPO
         {
             return new BehaviorTreeBuilder(_owner)
                 .RepeatForever()
-                    .Sequence("Wander Loop")
-                        .Do("Move", MoveStep)
-                        .Do("Idle", IdleStep)
+                    .Selector("Root")
+                        .Sequence("Follow Player")
+                            .Condition("Has Target", () => _ctx.Target != null)
+                            .Condition("In Follow Range", () =>
+                            {
+                                var self = _ctx.transform.position; self.y = 0f;
+                                var tgt = _ctx.Target.position; tgt.y = 0f;
+                                return Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance;
+                            })
+                            .Do("Follow", FollowStep)
+                        .End()
+                        .Sequence("Wander Loop")
+                            .Do("Move", MoveStep)
+                            .Do("Idle", IdleStep)
+                        .End()
                     .End()
                 .End()
                 .Build();
@@ -115,6 +127,48 @@ namespace HIPPO
             {
                 _ctx.IsIdling = false;
                 return TaskStatus.Success;
+            }
+
+            return TaskStatus.Continue;
+        }
+
+        private TaskStatus FollowStep()
+        {
+            if (_ctx.Target == null) return TaskStatus.Failure;
+
+            var self = _ctx.transform.position; self.y = 0f;
+            var tgt = _ctx.Target.position; tgt.y = 0f;
+            var to = (tgt - self);
+            var dist = to.magnitude;
+
+            if (dist > _ctx.FollowLoseDistance)
+            {
+                _ctx.IsMoving = false;
+                _ctx.Speed = 0f;
+                return TaskStatus.Failure;
+            }
+
+            var dir = dist > 0.001f ? to / dist : _ctx.transform.forward;
+
+            if (dist > _ctx.FollowStopDistance)
+            {
+                _ctx.MoveDir = dir;
+                _locomotion.TurnTowards(_ctx.MoveDir, Time.deltaTime);
+                if (_sensors.IsNearEdgeAhead() || _sensors.IsObstacleAhead())
+                {
+                    var turn = Random.Range(60f, 120f) * (Random.value < 0.5f ? -1f : 1f);
+                    _ctx.MoveDir = Quaternion.Euler(0f, turn, 0f) * _ctx.transform.forward;
+                }
+                _locomotion.MoveForward(Time.deltaTime);
+                _ctx.Speed = _locomotion.CurrentHorizontalSpeed;
+                _ctx.IsMoving = true;
+            }
+            else
+            {
+                _locomotion.TurnTowards(dir, Time.deltaTime);
+                _locomotion.MoveVerticalOnly(Time.deltaTime);
+                _ctx.Speed = 0f;
+                _ctx.IsMoving = false;
             }
 
             return TaskStatus.Continue;
