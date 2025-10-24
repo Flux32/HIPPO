@@ -46,6 +46,18 @@ namespace HIPPO
         private TaskStatus MoveStep()
         {
             Transform t = _ctx.transform;
+
+            if (_ctx.Target)
+            {
+                var self = t.position; self.y = 0f;
+                var tgt = _ctx.Target.position; tgt.y = 0f;
+                if (Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance)
+                {
+                    _ctx.IsMoving = false;
+                    _ctx.Speed = 0f;
+                    return TaskStatus.Failure;
+                }
+            }
             
             if (!_ctx.IsMoving)
             {
@@ -107,6 +119,19 @@ namespace HIPPO
         private TaskStatus IdleStep()
         {
             var t = _ctx.transform;
+
+            if (_ctx.Target)
+            {
+                var self = t.position; self.y = 0f;
+                var tgt = _ctx.Target.position; tgt.y = 0f;
+                if (Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance)
+                {
+                    _ctx.IsIdling = false;
+                    _ctx.IsMoving = false;
+                    _ctx.Speed = 0f;
+                    return TaskStatus.Failure;
+                }
+            }
             if (!_ctx.IsIdling)
             {
                 _ctx.IsIdling = true;
