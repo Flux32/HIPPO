@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace HIPPO
@@ -23,9 +22,6 @@ namespace HIPPO
 
         private void Awake()
         {
-            if (_ctx == null) _ctx = GetComponent<HippoContext>();
-            if (_head == null) _head = FindChildByNameExact(transform, "Head") ?? FindChildContains("Head");
-            if (_mouth == null) _mouth = FindChildByNameExact(transform, "M_Hippo_Head_Mouth") ?? FindChildByNameExact(transform, "Head_Mouth") ?? FindChildContains("Mouth");
             _headBase = _head ? _head.localRotation : Quaternion.identity;
             _mouthBase = _mouth ? _mouth.localRotation : Quaternion.identity;
         }
@@ -66,28 +62,9 @@ namespace HIPPO
             }
         }
 
-        private static Transform FindChildByNameExact(Transform root, string name)
+        public void ForceCloseMouth()
         {
-            foreach (var t in root.GetComponentsInChildren<Transform>(true))
-            {
-                if (t.name.Equals(name, StringComparison.Ordinal)) return t;
-            }
-            return null;
-        }
-
-        private static Transform FindChildContains(string token)
-        {
-            return FindChildContains(FindObjectOfType<HippoAI>()?.transform ?? null, token);
-        }
-
-        private static Transform FindChildContains(Transform root, string token)
-        {
-            if (root == null) return null;
-            foreach (var t in root.GetComponentsInChildren<Transform>(true))
-            {
-                if (t.name.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0) return t;
-            }
-            return null;
+            _mouthHoldUntil = -1f;
         }
     }
 }

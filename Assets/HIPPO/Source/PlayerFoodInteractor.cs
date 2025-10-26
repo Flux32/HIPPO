@@ -22,20 +22,12 @@ namespace HIPPO
 
         private void Awake()
         {
-            _holdAnchor.localPosition = new Vector3(0f, -0.05f, _holdDistance);
+            _holdAnchor.localPosition = new Vector3(0f, -0.45f, _holdDistance);
             _holdAnchor.localRotation = Quaternion.identity;
         }
 
         private void OnEnable()
         {
-            if (_camera == null) _camera = Camera.main;
-            if (_holdAnchor != null && _camera != null && _holdAnchor.parent != _camera.transform)
-            {
-                _holdAnchor.SetParent(_camera.transform, worldPositionStays: false);
-                _holdAnchor.localPosition = new Vector3(0f, -0.05f, _holdDistance);
-                _holdAnchor.localRotation = Quaternion.identity;
-            }
-
             _dropOrPickUpInputAction.action.Enable();
             _throwInputAction.action.Enable();
             _dropOrPickUpInputAction.action.performed += OnTogglePickUpPerformed;
@@ -52,8 +44,6 @@ namespace HIPPO
 
         private void LateUpdate()
         {
-            if (_holdAnchor && _camera)
-                _holdAnchor.localPosition = new Vector3(0f, -0.05f, _holdDistance);
             if (_held != null && _holdAnchor)
             {
                 _held.transform.position = _holdAnchor.position;
@@ -67,6 +57,7 @@ namespace HIPPO
             
             if (_held == null) 
                 TryPickup();
+            
             else Drop();
         }
 
@@ -80,12 +71,10 @@ namespace HIPPO
         {
             int mask = _raycastMask.value == 0 ? Physics.DefaultRaycastLayers : _raycastMask.value;
             
-            Debug.Log("TryPickup");
-            
             if (Physics.Raycast(_camera.transform.position, _camera.transform.forward, out var hit, _pickupDistance, mask))
             {
-                Debug.Log("TryPickup: pickup");
                 var food = hit.collider.GetComponentInParent<FoodItem>();
+                
                 if (food != null)
                 {
                     _held = food;
