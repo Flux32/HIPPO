@@ -1088,6 +1088,10 @@ PrefabInstance:
       propertyPath: _followStartDistance
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 2417092184682405609, guid: d22bd8886e7fb46f0bf599910d53b111, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8be0b64ac1fcf4b8590f98d8c6ee4060, type: 2}
     - target: {fileID: 3659789690437996957, guid: d22bd8886e7fb46f0bf599910d53b111, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.674
@@ -1128,6 +1132,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7612645995419689380, guid: d22bd8886e7fb46f0bf599910d53b111, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 57946b0bf82d44cadb2101db3326b93e, type: 2}
     - target: {fileID: 8528899638009246574, guid: d22bd8886e7fb46f0bf599910d53b111, type: 3}
       propertyPath: m_Name
       value: Hippo
