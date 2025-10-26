@@ -11,11 +11,13 @@ namespace HIPPO
         [SerializeField, Range(-80f, 80f)] private float _headUpAngle = -25f;
         [SerializeField, Range(-80f, 80f)] private float _mouthOpenAngle = 30f;
         [SerializeField, Range(30f, 720f)] private float _rotateSpeed = 240f;
+        [SerializeField, Min(0f)] private float _mouthCloseDelay = 1.5f;
         [SerializeField] private bool _invertHeadAxisX;
         [SerializeField] private bool _invertMouthAxisX = true;
 
         private Quaternion _headBase;
         private Quaternion _mouthBase;
+        private float _mouthHoldUntil;
 
         private void Awake()
         {
@@ -51,8 +53,10 @@ namespace HIPPO
 
             if (_mouth)
             {
+                if (shouldBeg) _mouthHoldUntil = Time.time + _mouthCloseDelay;
+                var holdOpen = shouldBeg || Time.time < _mouthHoldUntil;
                 var sign = _invertMouthAxisX ? -1f : 1f;
-                var angle = shouldBeg ? _mouthOpenAngle * sign : 0f;
+                var angle = holdOpen ? _mouthOpenAngle * sign : 0f;
                 var target = _mouthBase * Quaternion.Euler(angle, 0f, 0f);
                 _mouth.localRotation = Quaternion.RotateTowards(_mouth.localRotation, target, _rotateSpeed * Time.deltaTime);
             }
