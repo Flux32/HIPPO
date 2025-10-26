@@ -17,6 +17,9 @@ namespace HIPPO
         
         private FoodItem _held;
 
+        public bool IsHoldingFood => _held != null;
+        public FoodItem HeldItem => _held;
+
         private void Awake()
         {
             _holdAnchor.localPosition = new Vector3(0f, -0.05f, _holdDistance);

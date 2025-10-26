@@ -31,6 +31,8 @@ namespace HIPPO
         [SerializeField, Min(0f)] private float _followStartDistance = 12f;
         [SerializeField, Min(0f)] private float _followStopDistance = 2.5f;
         [SerializeField, Min(0f)] private float _followLoseDistance = 16f;
+        [SerializeField, Min(0f)] private float _playerDetectRadius = 24f;
+        [SerializeField] private LayerMask _playerDetectMask = ~0;
         [SerializeField, Tooltip("Behavior tree cache for visualization")] private BehaviorTree _tree;
 
         private CharacterController _controller;
@@ -54,16 +56,10 @@ namespace HIPPO
             _ctx.HomeBias = Mathf.Clamp01(_homeBias);
             _ctx.MoveTimeRange = _moveTimeRange;
             _ctx.IdleTimeRange = _idleTimeRange;
-            if (_followTarget == null)
-            {
-                var fpc = FindObjectOfType<FirstPersonController>();
-                if (fpc != null) _followTarget = fpc.transform;
-                else {
-                    var tagged = GameObject.FindGameObjectWithTag("Player");
-                    if (tagged) _followTarget = tagged.transform;
-                }
-            }
+            if (_followTarget == null) AcquirePlayerTarget();
             _ctx.Target = _followTarget;
+            if (_ctx.Target != null && _ctx.PlayerInteractor == null)
+                _ctx.PlayerInteractor = _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
             _ctx.FollowStartDistance = _followStartDistance;
             _ctx.FollowStopDistance = _followStopDistance;
             _ctx.FollowLoseDistance = Mathf.Max(_followLoseDistance, _followStartDistance + 0.1f);
@@ -75,6 +71,11 @@ namespace HIPPO
 
         private void Update()
         {
+            if (_ctx.Target == null) {
+                AcquirePlayerTarget();
+                _ctx.Target = _followTarget;
+                if (_ctx.Target != null) _ctx.PlayerInteractor = _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
+            }
             _tree?.Tick();
         }
 
@@ -87,6 +88,45 @@ namespace HIPPO
             Gizmos.color = Color.yellow;
             var start = transform.position + Vector3.up * 0.2f + transform.forward * _edgeCheckDistance;
             Gizmos.DrawLine(start, start + Vector3.down * _groundRayLength);
+        }
+
+        private void AcquirePlayerTarget()
+        {
+            var center = transform.position;
+            var radius = Mathf.Max(_playerDetectRadius, _followLoseDistance);
+            var hits = Physics.OverlapSphere(center, radius, _playerDetectMask, QueryTriggerInteraction.Ignore);
+            Transform bestT = null;
+            PlayerFoodInteractor bestInteractor = null;
+            float bestDist = float.MaxValue;
+            for (int i = 0; i < hits.Length; i++)
+            {
+                var interactor = hits[i].GetComponentInParent<PlayerFoodInteractor>();
+                if (interactor == null) continue;
+                var t = interactor.transform;
+                var dx = t.position.x - center.x;
+                var dz = t.position.z - center.z;
+                var d = dx * dx + dz * dz;
+                if (d < bestDist)
+                {
+                    bestDist = d;
+                    bestT = t;
+                    bestInteractor = interactor;
+                }
+            }
+            if (bestT != null)
+            {
+                _followTarget = bestT;
+                if (_ctx != null) _ctx.PlayerInteractor = bestInteractor;
+            }
+            else
+            {
+                var inter = FindObjectOfType<PlayerFoodInteractor>();
+                if (inter != null)
+                {
+                    _followTarget = inter.transform;
+                    if (_ctx != null) _ctx.PlayerInteractor = inter;
+                }
+            }
         }
     }
 }

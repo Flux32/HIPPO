@@ -11,6 +11,7 @@ namespace HIPPO
         public Vector2 MoveTimeRange { get; set; }
         public Vector2 IdleTimeRange { get; set; }
         public Transform Target { get; set; }
+        public PlayerFoodInteractor PlayerInteractor { get; set; }
         public float FollowStartDistance { get; set; }
         public float FollowStopDistance { get; set; }
         public float FollowLoseDistance { get; set; }
