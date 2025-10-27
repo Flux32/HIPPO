@@ -15,6 +15,7 @@ public class Cheats : MonoBehaviour
 
     private void OnDisable()
     {
+        _restartAction.action.performed -= OnRestartPerformed;
         _restartAction.action.Disable();
     }
     

@@ -43,20 +43,22 @@ namespace HIPPO
                 .Build();
         }
 
+        private bool InFollowRange()
+        {
+            if (_ctx.Target == null) return false;
+            var a = _ctx.transform.position; a.y = 0f;
+            var b = _ctx.Target.position; b.y = 0f;
+            return Vector3.Distance(a, b) <= _ctx.FollowStartDistance;
+        }
+
         private TaskStatus MoveStep()
         {
             Transform t = _ctx.transform;
-
-            if (_ctx.Target)
+            if (InFollowRange())
             {
-                var self = t.position; self.y = 0f;
-                var tgt = _ctx.Target.position; tgt.y = 0f;
-                if (Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance)
-                {
-                    _ctx.IsMoving = false;
-                    _ctx.Speed = 0f;
-                    return TaskStatus.Failure;
-                }
+                _ctx.IsMoving = false;
+                _ctx.Speed = 0f;
+                return TaskStatus.Failure;
             }
             
             if (!_ctx.IsMoving)
@@ -119,18 +121,12 @@ namespace HIPPO
         private TaskStatus IdleStep()
         {
             var t = _ctx.transform;
-
-            if (_ctx.Target)
+            if (InFollowRange())
             {
-                var self = t.position; self.y = 0f;
-                var tgt = _ctx.Target.position; tgt.y = 0f;
-                if (Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance)
-                {
-                    _ctx.IsIdling = false;
-                    _ctx.IsMoving = false;
-                    _ctx.Speed = 0f;
-                    return TaskStatus.Failure;
-                }
+                _ctx.IsIdling = false;
+                _ctx.IsMoving = false;
+                _ctx.Speed = 0f;
+                return TaskStatus.Failure;
             }
             if (!_ctx.IsIdling)
             {
