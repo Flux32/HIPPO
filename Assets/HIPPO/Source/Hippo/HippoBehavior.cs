@@ -53,7 +53,8 @@ namespace HIPPO
 
         private TaskStatus MoveStep()
         {
-            Transform t = _ctx.transform;
+            Transform ctxTransform = _ctx.transform;
+            
             if (InFollowRange())
             {
                 _ctx.IsMoving = false;
@@ -71,9 +72,11 @@ namespace HIPPO
                 dir.Normalize();
                 
                 if (dir.sqrMagnitude < 0.01f) 
-                    dir = t.forward;
+                    dir = ctxTransform.forward;
 
-                Vector3 toHome = (_ctx.HomePosition - t.position); toHome.y = 0f;
+                Vector3 toHome = (_ctx.HomePosition - ctxTransform.position); 
+                toHome.y = 0f;
+                
                 if (toHome.magnitude > _ctx.WanderRadius)
                 {
                     dir = Vector3.Slerp(dir, toHome.normalized, _ctx.HomeBias);
@@ -81,17 +84,21 @@ namespace HIPPO
 
                 for (int i = 0; i < 6; i++)
                 {
-                    if (_sensors.DirectionIsSafe(dir)) break;
+                    if (_sensors.DirectionIsSafe(dir)) 
+                        break;
+                    
                     dir = Quaternion.Euler(0f, Random.Range(-140f, 140f), 0f) * dir;
                 }
 
                 _ctx.MoveDir = dir.normalized;
             }
 
-            Vector3 flatPos = t.position; 
+            Vector3 flatPos = ctxTransform.position; 
             flatPos.y = 0f;
+            
             Vector3 flatHome = _ctx.HomePosition; 
             flatHome.y = 0f;
+            
             Vector3 toHomeFlat = (flatHome - flatPos);
             
             if (toHomeFlat.magnitude > _ctx.WanderRadius)
@@ -102,7 +109,7 @@ namespace HIPPO
             if (_sensors.IsNearEdgeAhead() || _sensors.IsObstacleAhead())
             {
                 float turn = Random.Range(60f, 140f) * (Random.value < 0.5f ? -1f : 1f);
-                _ctx.MoveDir = Quaternion.Euler(0f, turn, 0f) * t.forward;
+                _ctx.MoveDir = Quaternion.Euler(0f, turn, 0f) * ctxTransform.forward;
             }
 
             _locomotion.MoveForward(Time.deltaTime);
@@ -120,7 +127,8 @@ namespace HIPPO
 
         private TaskStatus IdleStep()
         {
-            var t = _ctx.transform;
+            Transform ctxTransform = _ctx.transform;
+            
             if (InFollowRange())
             {
                 _ctx.IsIdling = false;
@@ -128,6 +136,7 @@ namespace HIPPO
                 _ctx.Speed = 0f;
                 return TaskStatus.Failure;
             }
+            
             if (!_ctx.IsIdling)
             {
                 _ctx.IsIdling = true;
@@ -137,7 +146,7 @@ namespace HIPPO
             if (Random.value < 0.02f)
             {
                 var turn = Random.Range(-30f, 30f) * Time.deltaTime;
-                t.rotation = Quaternion.Euler(0f, t.eulerAngles.y + turn, 0f);
+                ctxTransform.rotation = Quaternion.Euler(0f, ctxTransform.eulerAngles.y + turn, 0f);
             }
 
             _locomotion.MoveVerticalOnly(Time.deltaTime);
@@ -157,10 +166,10 @@ namespace HIPPO
         {
             if (_ctx.Target == null) return TaskStatus.Failure;
 
-            var self = _ctx.transform.position; self.y = 0f;
-            var tgt = _ctx.Target.position; tgt.y = 0f;
-            var to = (tgt - self);
-            var dist = to.magnitude;
+            Vector3 self = _ctx.transform.position; self.y = 0f;
+            Vector3 tgt = _ctx.Target.position; tgt.y = 0f;
+            Vector3 to = (tgt - self);
+            float dist = to.magnitude;
 
             if (dist > _ctx.FollowLoseDistance)
             {
@@ -169,17 +178,19 @@ namespace HIPPO
                 return TaskStatus.Failure;
             }
 
-            var dir = dist > 0.001f ? to / dist : _ctx.transform.forward;
+            Vector3 dir = dist > 0.001f ? to / dist : _ctx.transform.forward;
 
             if (dist > _ctx.FollowStopDistance)
             {
                 _ctx.MoveDir = dir;
                 _locomotion.TurnTowards(_ctx.MoveDir, Time.deltaTime);
+                
                 if (_sensors.IsNearEdgeAhead() || _sensors.IsObstacleAhead())
                 {
                     var turn = Random.Range(60f, 120f) * (Random.value < 0.5f ? -1f : 1f);
                     _ctx.MoveDir = Quaternion.Euler(0f, turn, 0f) * _ctx.transform.forward;
                 }
+                
                 _locomotion.MoveForward(Time.deltaTime);
                 _ctx.Speed = _locomotion.CurrentHorizontalSpeed;
                 _ctx.IsMoving = true;

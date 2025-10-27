@@ -13,9 +13,14 @@ namespace HIPPO
         
         private void OnTriggerEnter(Collider other)
         {
-            var food = other.GetComponentInParent<FoodItem>();
-            if (food == null || _head == null) return;
-            if (food.IsHeld) food.Drop();
+            FoodItem food = other.GetComponentInParent<FoodItem>();
+            
+            if (food == null)
+                return;
+            
+            if (food.IsHeld) 
+                food.Drop();
+            
             food.PickUp(_attachParent);
             StartCoroutine(Consume(food));
         }
@@ -23,9 +28,14 @@ namespace HIPPO
         private IEnumerator Consume(FoodItem food)
         {
             yield return new WaitForSeconds(_consumeDelay);
-            if (_head) _head.ForceCloseMouth();
+            
+            if (_head) 
+                _head.ForceCloseMouth();
+            
             OnConsumed?.Invoke();
-            if (food) food.Consume();
+            
+            if (food) 
+                food.Consume();
         }
     }
 }

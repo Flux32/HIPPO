@@ -21,10 +21,13 @@ namespace HIPPO
 
         public bool DirectionIsSafe(Vector3 dir)
         {
-            var start = _root.position + Vector3.up * 0.2f + dir.normalized * _edgeCheckDistance;
-            if (!RaycastDownIgnoreSelf(start, _groundRayLength, out _)) return false;
+            Vector3 start = _root.position + Vector3.up * 0.2f + dir.normalized * _edgeCheckDistance;
+            
+            if (!RaycastDownIgnoreSelf(start, _groundRayLength, out _)) 
+                return false;
 
-            var origin = _root.position + Vector3.up * 0.6f;
+            Vector3 origin = _root.position + Vector3.up * 0.6f;
+            
             if (Physics.Raycast(origin, dir.normalized, out var hit, _obstacleCheckDistance, _groundMask, QueryTriggerInteraction.Ignore))
             {
                 if (!hit.transform.IsChildOf(_root)) return false;
@@ -35,23 +38,25 @@ namespace HIPPO
 
         public bool IsNearEdgeAhead()
         {
-            var start = _root.position + Vector3.up * 0.2f + _root.forward * _edgeCheckDistance;
+            Vector3 start = _root.position + Vector3.up * 0.2f + _root.forward * _edgeCheckDistance;
+            
             return !RaycastDownIgnoreSelf(start, _groundRayLength, out _);
         }
 
         public bool IsObstacleAhead()
         {
-            var origin = _root.position + Vector3.up * 0.6f;
+            Vector3 origin = _root.position + Vector3.up * 0.6f;
+            
             if (Physics.Raycast(origin, _root.forward, out var hit, _obstacleCheckDistance, _groundMask, QueryTriggerInteraction.Ignore))
-            {
                 return !hit.transform.IsChildOf(_root);
-            }
+            
             return false;
         }
 
         private bool RaycastDownIgnoreSelf(Vector3 start, float length, out RaycastHit hit)
         {
             var hits = Physics.RaycastAll(start, Vector3.down, length, _groundMask, QueryTriggerInteraction.Ignore);
+            
             for (int i = 0; i < hits.Length; i++)
             {
                 if (!hits[i].transform.IsChildOf(_root))
@@ -60,6 +65,7 @@ namespace HIPPO
                     return true;
                 }
             }
+            
             hit = default;
             return false;
         }

@@ -25,10 +25,13 @@ namespace HIPPO
         {
             _isHeld = true;
             _holder = holder;
+            
             _rb.isKinematic = true;
             _rb.linearVelocity = Vector3.zero;
             _rb.angularVelocity = Vector3.zero;
+            
             _collider.enabled = false;
+            
             transform.SetParent(holder, worldPositionStays: true);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;

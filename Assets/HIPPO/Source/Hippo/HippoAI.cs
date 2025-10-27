@@ -85,7 +85,7 @@ namespace HIPPO
             }
             _tree?.Tick();
         }
-
+        
         private void OnDrawGizmosSelected()
         {
             Vector3 home = transform.position;

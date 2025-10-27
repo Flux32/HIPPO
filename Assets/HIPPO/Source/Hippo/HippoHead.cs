@@ -28,43 +28,45 @@ namespace HIPPO
 
         private void Update()
         {
-            var shouldBeg = false;
+            bool shouldBeg = false;
+            
             if (_ctx != null && _ctx.Target != null)
             {
-                var self = _ctx.transform.position; self.y = 0f;
-                var tgt = _ctx.Target.position; tgt.y = 0f;
-                var near = Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance + 0.01f;
+                Vector3 self = _ctx.transform.position; self.y = 0f;
+                Vector3 tgt = _ctx.Target.position; tgt.y = 0f;
+                bool near = Vector3.Distance(self, tgt) <= _ctx.FollowStartDistance + 0.01f;
+                
                 if (near)
                 {
-                    var interactor = _ctx.PlayerInteractor ? _ctx.PlayerInteractor : _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
-                    if (interactor != null && interactor.IsHoldingFood) shouldBeg = true;
+                    PlayerFoodInteractor interactor = _ctx.PlayerInteractor ? _ctx.PlayerInteractor : _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
+                    
+                    if (interactor != null && interactor.IsHoldingFood)
+                        shouldBeg = true;
                 }
             }
 
-            if (_head)
-            {
-                if (shouldBeg) _headHoldUntil = Time.time + _headDownDelay;
-                var holdUp = shouldBeg || Time.time < _headHoldUntil;
-                var sign = _invertHeadAxisX ? -1f : 1f;
-                var angle = holdUp ? _headUpAngle * sign : 0f;
-                var target = _headBase * Quaternion.Euler(angle, 0f, 0f);
-                _head.localRotation = Quaternion.RotateTowards(_head.localRotation, target, _rotateSpeed * Time.deltaTime);
-            }
-
-            if (_mouth)
-            {
-                if (shouldBeg) _mouthHoldUntil = Time.time + _mouthCloseDelay;
-                var holdOpen = shouldBeg || Time.time < _mouthHoldUntil;
-                var sign = _invertMouthAxisX ? -1f : 1f;
-                var angle = holdOpen ? _mouthOpenAngle * sign : 0f;
-                var target = _mouthBase * Quaternion.Euler(angle, 0f, 0f);
-                _mouth.localRotation = Quaternion.RotateTowards(_mouth.localRotation, target, _rotateSpeed * Time.deltaTime);
-            }
+            ApplyHoldRotX(_head, _headBase, ref _headHoldUntil, _headDownDelay, _headUpAngle, _invertHeadAxisX, shouldBeg);
+            ApplyHoldRotX(_mouth, _mouthBase, ref _mouthHoldUntil, _mouthCloseDelay, _mouthOpenAngle, _invertMouthAxisX, shouldBeg);
         }
 
         public void ForceCloseMouth()
         {
             _mouthHoldUntil = -1f;
+        }
+
+        private void ApplyHoldRotX(Transform joint, Quaternion baseRot, ref float holdUntil, float delay, float angle, bool invert, bool shouldHold)
+        {
+            if (!joint) 
+                return;
+            
+            if (shouldHold)
+                holdUntil = Time.time + delay;
+            
+            bool hold = shouldHold || Time.time < holdUntil;
+            float sign = invert ? -1f : 1f;
+            float a = hold ? angle * sign : 0f;
+            Quaternion target = baseRot * Quaternion.Euler(a, 0f, 0f);
+            joint.localRotation = Quaternion.RotateTowards(joint.localRotation, target, _rotateSpeed * Time.deltaTime);
         }
     }
 }

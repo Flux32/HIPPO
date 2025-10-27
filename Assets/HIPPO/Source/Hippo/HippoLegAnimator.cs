@@ -4,6 +4,7 @@ namespace HIPPO
 {
     public class HippoLegAnimator : MonoBehaviour
     {
+        [Header("Legs")]
         [SerializeField] private Transform _frontLeft;
         [SerializeField] private Transform _frontRight;
         [SerializeField] private Transform _backLeft;
@@ -28,31 +29,30 @@ namespace HIPPO
         private void Awake()
         {
             CacheBaseRotations();
-            if (_ctx == null) _ctx = GetComponent<HippoContext>();
         }
 
         private void Update()
         {
-            if (_ctx == null) _ctx = GetComponent<HippoContext>();
-            var dt = Mathf.Max(Time.deltaTime, 1e-4f);
-            var speed = _ctx ? _ctx.Speed : 0f;
-            var moving = _ctx ? _ctx.IsMoving : speed > _moveThreshold;
-            var targetAmp = moving ? 1f : 0f;
-            _amp = Mathf.SmoothDamp(_amp, targetAmp, ref _ampVel, Mathf.Max(0.0001f, _amplitudeDamp), Mathf.Infinity, dt);
+            float deltaTime = Mathf.Max(Time.deltaTime, 1e-4f);
+            float speed = _ctx ? _ctx.Speed : 0f;
+            bool moving = _ctx ? _ctx.IsMoving : speed > _moveThreshold;
+            float targetAmp = moving ? 1f : 0f;
+            
+            _amp = Mathf.SmoothDamp(_amp, targetAmp, ref _ampVel, Mathf.Max(0.0001f, _amplitudeDamp), Mathf.Infinity, deltaTime);
 
-            var freq = _baseFrequency * Mathf.Clamp(_referenceSpeed > 0f ? (speed / _referenceSpeed) : 1f, 0.5f, 2.0f);
-            var phase = Time.time * Mathf.PI * 2f * freq;
-            var s = Mathf.Sin(phase) * _amp;
+            float freq = _baseFrequency * Mathf.Clamp(_referenceSpeed > 0f ? (speed / _referenceSpeed) : 1f, 0.5f, 2.0f);
+            float phase = Time.time * Mathf.PI * 2f * freq;
+            float sin = Mathf.Sin(phase) * _amp;
 
-            ApplyLegSwing(_frontLeft, _flBase, +s);
-            ApplyLegSwing(_backRight, _brBase, +s);
-            ApplyLegSwing(_frontRight, _frBase, -s);
-            ApplyLegSwing(_backLeft, _blBase, -s);
+            ApplyLegSwing(_frontLeft, _flBase, +sin);
+            ApplyLegSwing(_backRight, _brBase, +sin);
+            ApplyLegSwing(_frontRight, _frBase, -sin);
+            ApplyLegSwing(_backLeft, _blBase, -sin);
         }
 
-        private void ApplyLegSwing(Transform leg, Quaternion baseRot, float sinVal)
+        private void ApplyLegSwing(Transform leg, Quaternion baseRot, float sin)
         {
-            var angle = sinVal * _swingAngle;
+            var angle = sin * _swingAngle;
             leg.localRotation = baseRot * Quaternion.Euler(angle, 0f, 0f);
         }
 
