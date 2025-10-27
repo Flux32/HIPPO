@@ -56,10 +56,15 @@ namespace HIPPO
             _ctx.HomeBias = Mathf.Clamp01(_homeBias);
             _ctx.MoveTimeRange = _moveTimeRange;
             _ctx.IdleTimeRange = _idleTimeRange;
-            if (_followTarget == null) AcquirePlayerTarget();
+            
+            if (_followTarget == null) 
+                AcquirePlayerTarget();
+            
             _ctx.Target = _followTarget;
+            
             if (_ctx.Target != null && _ctx.PlayerInteractor == null)
                 _ctx.PlayerInteractor = _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
+            
             _ctx.FollowStartDistance = _followStartDistance;
             _ctx.FollowStopDistance = _followStopDistance;
             _ctx.FollowLoseDistance = Mathf.Max(_followLoseDistance, _followStartDistance + 0.1f);
@@ -74,38 +79,46 @@ namespace HIPPO
             if (_ctx.Target == null) {
                 AcquirePlayerTarget();
                 _ctx.Target = _followTarget;
-                if (_ctx.Target != null) _ctx.PlayerInteractor = _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
+                
+                if (_ctx.Target != null) 
+                    _ctx.PlayerInteractor = _ctx.Target.GetComponentInParent<PlayerFoodInteractor>();
             }
             _tree?.Tick();
         }
 
         private void OnDrawGizmosSelected()
         {
-            var home = transform.position;
+            Vector3 home = transform.position;
             Gizmos.color = new Color(0.2f, 0.8f, 0.3f, 0.25f);
             Gizmos.DrawWireSphere(home, _wanderRadius);
 
             Gizmos.color = Color.yellow;
-            var start = transform.position + Vector3.up * 0.2f + transform.forward * _edgeCheckDistance;
+            Vector3 start = transform.position + Vector3.up * 0.2f + transform.forward * _edgeCheckDistance;
             Gizmos.DrawLine(start, start + Vector3.down * _groundRayLength);
         }
 
         private void AcquirePlayerTarget()
         {
-            var center = transform.position;
-            var radius = Mathf.Max(_playerDetectRadius, _followLoseDistance);
-            var hits = Physics.OverlapSphere(center, radius, _playerDetectMask, QueryTriggerInteraction.Ignore);
+            Vector3 center = transform.position;
+            float radius = Mathf.Max(_playerDetectRadius, _followLoseDistance);
+            Collider[] hits = Physics.OverlapSphere(center, radius, _playerDetectMask, QueryTriggerInteraction.Ignore);
+            
             Transform bestT = null;
             PlayerFoodInteractor bestInteractor = null;
             float bestDist = float.MaxValue;
+            
             for (int i = 0; i < hits.Length; i++)
             {
                 var interactor = hits[i].GetComponentInParent<PlayerFoodInteractor>();
-                if (interactor == null) continue;
-                var t = interactor.transform;
-                var dx = t.position.x - center.x;
-                var dz = t.position.z - center.z;
-                var d = dx * dx + dz * dz;
+                
+                if (interactor == null) 
+                    continue;
+                
+                Transform t = interactor.transform;
+                float dx = t.position.x - center.x;
+                float dz = t.position.z - center.z;
+                float d = dx * dx + dz * dz;
+                
                 if (d < bestDist)
                 {
                     bestDist = d;
@@ -113,6 +126,7 @@ namespace HIPPO
                     bestInteractor = interactor;
                 }
             }
+            
             if (bestT != null)
             {
                 _followTarget = bestT;
@@ -124,7 +138,9 @@ namespace HIPPO
                 if (inter != null)
                 {
                     _followTarget = inter.transform;
-                    if (_ctx != null) _ctx.PlayerInteractor = inter;
+                    
+                    if (_ctx != null) 
+                        _ctx.PlayerInteractor = inter;
                 }
             }
         }

@@ -1234,12 +1234,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _ctx: {fileID: 7747667526254605794}
-  _head: {fileID: 4970705058072926418}
+  _head: {fileID: 8507669515600677992}
   _mouth: {fileID: 7801644966872247525}
   _headUpAngle: -25
   _mouthOpenAngle: -25
   _rotateSpeed: 240
-  _headDownDelay: 1.5
+  _headDownDelay: 1
   _mouthCloseDelay: 1.5
   _invertHeadAxisX: 0
   _invertMouthAxisX: 1
